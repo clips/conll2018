@@ -1,6 +1,6 @@
 # conll2018
 
-The code for the conll2018 submission: "from strings to other things: linking the neighborhood and transposition effects in word reading."
+The code for the conll2018 submission: [from strings to other things: linking the neighborhood and transposition effects in word reading.]()
 
 In the paper, we explore whether the neighborhoods of words featurized using feature sets that allow for transposition, e.g. bigram features or character trigrams, explain more variance in RT measurements than conventional feature sets.
 
@@ -35,6 +35,10 @@ French Lexicon Project words.xls
 The Subtlex files can be found [here](http://crr.ugent.be/programs-data/subtitle-frequencies).
 Lexique can be found [here](http://www.lexique.org/public/Lexique382.zip) (links to direct download)
 The lexicon projects can be found [here](http://crr.ugent.be/programs-data/lexicon-projects)
+
+# Data request
+
+We can supply the neighborhood measurements for all the corpora and feature sets on request. Please send an E-mail to the lead author.
 
 # Citation
 
