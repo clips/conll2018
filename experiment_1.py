@@ -4,9 +4,9 @@ import time
 
 from tqdm import tqdm
 from old20.old20 import old20
-from neighborhoods.data import load_data
-from neighborhoods.helpers import load_featurizers_ortho, to_csv
-from neighborhoods import calc_n
+from conll.data import load_data
+from conll.helpers import load_featurizers_ortho, to_csv
+from conll import calc_n
 
 
 if __name__ == "__main__":

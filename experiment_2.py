@@ -4,9 +4,9 @@ import torch
 from torch.autograd import Variable
 
 from tqdm import tqdm
-from neighborhoods.mlp import Perceptron, train
-from neighborhoods.helpers import load_featurizers_ortho, to_csv
-from neighborhoods.data import load_data
+from conll.mlp import Perceptron, train
+from conll.helpers import load_featurizers_ortho, to_csv
+from conll.data import load_data
 from sklearn.metrics import pairwise_distances
 
 torch.cuda.set_device(1)
