@@ -11,6 +11,11 @@ Across all our experiments, we find that the non-transpositional feature sets ex
 From this, we conclude that the neighborhood is formed without taking into account transpositions.
 Notably, this flies in the face of conventional psycholinguistic research on the neighborhood effect.
 
+# Requirements
+
+The old20 package needs to be installed manually, see [here](https://github.com/stephantul/old20).
+All other requirements are in `requirements.txt`.
+
 # Usage
 
 Run `experiment_1.py` or `experiment_2.py` to get the raw data files as CSV from the corpora.
