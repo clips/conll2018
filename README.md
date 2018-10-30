@@ -1,6 +1,6 @@
 # conll2018
 
-The code for the conll2018 submission: [from strings to other things: linking the neighborhood and transposition effects in word reading.]()
+The code for the conll2018 submission: [from strings to other things: linking the neighborhood and transposition effects in word reading.](http://www.aclweb.org/anthology/K18-1008)
 
 In the paper, we explore whether the neighborhoods of words featurized using feature sets that allow for transposition, e.g. bigram features or character trigrams, explain more variance in RT measurements than conventional feature sets.
 
