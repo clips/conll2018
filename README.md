@@ -45,6 +45,13 @@ We can supply the neighborhood measurements for all the corpora and feature sets
 If you use this code, or the results from the paper, please cite us, as follows:
 
 ```
+@inproceedings{tulkens2018strings,
+  title={From Strings to Other Things: Linking the Neighborhood and Transposition effects in Word Reading},
+  author={Tulkens, Stephan and Sandra, Dominiek and Daelemans, Walter},
+  booktitle={Proceedings of the 22nd Conference on Computational Natural Language Learning},
+  pages={75--85},
+  year={2018}
+}
 ```
 
 # License
