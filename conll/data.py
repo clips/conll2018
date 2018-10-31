@@ -11,24 +11,24 @@ import numpy as np
 
 from string import ascii_lowercase
 from wordkit.corpora import Subtlex, Lexique
-from .lexicon import read_blp_format, read_dlp2_format, read_flp_format
+from .lexicon import read_blp_format, read_dlp1_format, read_flp_format
 
 
 # This path needs to be modified
 C_PREFIX = "../../corpora"
 
 CORPORA = {"nld": (Subtlex,
-                   "{}/SUBTLEX-NL.cd-above2.txt".format(C_PREFIX),
-                   read_dlp2_format,
-                   "{}/dlp2_items.tsv".format(C_PREFIX)),
+                   "{}/subtlex/SUBTLEX-NL.cd-above2.txt".format(C_PREFIX),
+                   read_dlp1_format,
+                   "{}/lexicon_projects/dlp-items.txt".format(C_PREFIX)),
            "eng-uk": (Subtlex,
-                      "{}/SUBTLEX-UK.xlsx".format(C_PREFIX),
+                      "{}/subtlex/SUBTLEX-UK.xlsx".format(C_PREFIX),
                       read_blp_format,
-                      "{}/blp-items.txt".format(C_PREFIX)),
+                      "{}/lexicon_projects/blp-items.txt".format(C_PREFIX)),
            "fra": (Lexique,
-                   "{}/Lexique382.txt".format(C_PREFIX),
+                   "{}/lexique/Lexique382.txt".format(C_PREFIX),
                    read_flp_format,
-                   "{}/French Lexicon Project words.xls"
+                   "{}/lexicon_projects/French Lexicon Project words.xls"
                    "".format(C_PREFIX))}
 
 FIELDS = ("orthography", "frequency", "log_frequency")
