@@ -15,7 +15,7 @@ from .lexicon import read_blp_format, read_dlp2_format, read_flp_format
 
 
 # This path needs to be modified
-C_PREFIX = "data"
+C_PREFIX = "../../corpora"
 
 CORPORA = {"nld": (Subtlex,
                    "{}/SUBTLEX-NL.cd-above2.txt".format(C_PREFIX),
