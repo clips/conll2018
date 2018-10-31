@@ -49,7 +49,7 @@ if __name__ == "__main__":
 
             X_base = f.transform(subset_words).astype(np.float32)
 
-            s = np.zeros(X.shape[0])
+            s = np.zeros(X_base.shape[0])
             for x in tqdm(range(0, len(X_base), batch_size),
                           total=len(X_base) // batch_size):
                 d = 1 - X_base[x:x+batch_size].dot(X.T)
