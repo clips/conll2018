@@ -61,8 +61,7 @@ if __name__ == "__main__":
             estims.append(list(zip(s, freqs, lengths, rt_data, ortho_w)))
 
         ids.append(("coltheart_n", "coltheart_n"))
-        coltheart_n = calc_n(ortho_forms)
-        n = [coltheart_n[x] for x in ortho_w]
+        n = calc_n(ortho_w)
         estims.append(list(zip(n, freqs, lengths, rt_data, ortho_w)))
 
         sample_results = np.array(estims)
