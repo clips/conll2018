@@ -48,6 +48,7 @@ if __name__ == "__main__":
             X = X / np.linalg.norm(X, axis=1)[:, None]
 
             X_base = f.transform(subset_words).astype(np.float32)
+            X_base = X_base / np.linalg.norm(X_base, axis=1)[:, None]
 
             s = np.zeros(X_base.shape[0])
             for x in tqdm(range(0, len(X_base), batch_size),
