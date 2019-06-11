@@ -8,7 +8,7 @@ from torch.autograd import Variable
 from torch import optim
 from tqdm import tqdm
 
-device = torch.device('cuda:1')
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
 
 class Perceptron(nn.Module):
@@ -20,13 +20,13 @@ class Perceptron(nn.Module):
         self.fc1 = nn.Linear(in_dim, hid_dim)
         self.fc2 = nn.Linear(hid_dim, out_dim)
         self.sigmoid = nn.Sigmoid()
-        self.softmax = nn.Softmax(dim=0)
+        self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
         """Do a forward pass."""
         x = self.sigmoid(self.fc1(x))
-        x = self.softmax(self.fc2(x))
-        return x
+        logits = self.fc2(x)
+        return logits, self.softmax(logits)
 
     def hidden(self, x):
         """Get the hidden response to a forward pass."""
@@ -43,28 +43,29 @@ class Perceptron(nn.Module):
 def train(model, num_epoch, X, batch_size):
     """Training function."""
     model.train()
+    model = model.to(device)
+    X = X.to(device)
     train_loss = 0
 
     loss_func = nn.CrossEntropyLoss()
 
     optimizer = optim.Adam(model.parameters(), lr=1e-3)
 
-    y = Variable(torch.arange(X.shape[0]).type(torch.long)).cuda()
+    y = torch.arange(X.shape[0]).type(torch.long).to(device)
 
     lowest_loss = np.inf
     bad = 0
 
     for i in tqdm(range(num_epoch), total=num_epoch):
 
-        indices = np.random.permutation(np.arange(X.shape[0]))
+        indices = torch.randperm(len(X))
         X_ = X[indices]
-        X_ = Variable(torch.from_numpy(X_)).cuda()
         y_ = y[indices]
 
         for x in range(0, X.shape[0], 250):
-            prediction = model(X_[x:x+250])
+            logits, pred = model(X_[x:x+250])
 
-            loss = loss_func(prediction, y_[x:x+250])
+            loss = loss_func(logits, y_[x:x+250])
             optimizer.zero_grad()
             loss.backward()
 

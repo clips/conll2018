@@ -1,11 +1,12 @@
 """Experiment 1 in the paper."""
 import numpy as np
 import time
+import pandas as pd
 
 from tqdm import tqdm
 from old20.old20 import old20
 from conll.data import load_data
-from conll.helpers import load_featurizers_ortho, to_csv
+from conll.helpers import load_featurizers_ortho
 from conll import calc_n
 
 
@@ -17,29 +18,19 @@ if __name__ == "__main__":
 
     for lang in ("nld", "eng-uk", "fra"):
 
-        words, rt_data, subset_words = load_data(lang)
+        words = load_data(lang)
+        subset_words = [x for x in words if 'rt' in x]
 
         ortho_forms = [x['orthography'] for x in words]
         freqs = [x['frequency'] for x in subset_words]
         lengths = [len(x['orthography']) for x in subset_words]
-        rt_data = [rt_data[x['orthography']] for x in subset_words]
+        rt_data = [x['rt'] for x in subset_words]
         ortho_w = [x['orthography'] for x in subset_words]
 
+        header = ["score", "freq", "length", "rt", "ortho", "id"]
         estims = []
 
         featurizers, ids = zip(*load_featurizers_ortho(words))
-        ids_f = list(ids)
-        ids = []
-
-        if use_levenshtein:
-            start = time.time()
-            dists = old20(ortho_w, ortho_forms)
-            e = time.time() - start
-            ids.append(("old_20", "old_20"))
-            estims.append(list(zip(dists, freqs, lengths, rt_data, ortho_w)))
-
-        ids.extend(ids_f)
-
         batch_size = 1000
 
         for idx, f in tqdm(enumerate(featurizers), total=len(featurizers)):
@@ -58,13 +49,31 @@ if __name__ == "__main__":
                 d = np.sort(d, axis=1)[:, 1:21].mean(1)
                 s[x:x+batch_size] = d
 
-            estims.append(list(zip(s, freqs, lengths, rt_data, ortho_w)))
+            estims.extend(zip(s,
+                              freqs,
+                              lengths,
+                              rt_data,
+                              ortho_w,
+                              ["+".join(ids[idx])] * X.shape[0]))
 
-        ids.append(("coltheart_n", "coltheart_n"))
         n = calc_n(ortho_w)
-        estims.append(list(zip(n, freqs, lengths, rt_data, ortho_w)))
+        estims.extend(list(zip(n,
+                               freqs,
+                               lengths,
+                               rt_data,
+                               ortho_w,
+                               ["n"] * X.shape[0])))
+        if use_levenshtein:
+            start = time.time()
+            dists = old20(ortho_w, ortho_forms)
+            e = time.time() - start
+            estims.extend(list(zip(dists,
+                                   freqs,
+                                   lengths,
+                                   rt_data,
+                                   ortho_w,
+                                   ["old20"] * len(ortho_w))))
 
         sample_results = np.array(estims)
-        to_csv("data/experiment_raw_{}_all_words.csv".format(lang),
-               dict(zip(ids, sample_results)),
-               ("score", "freq", "length", "rt", "ortho_form"))
+        df = pd.DataFrame(sample_results, columns=header)
+        df.to_csv("data/experiment_{}_all_words.csv".format(lang))
