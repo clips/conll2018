@@ -83,9 +83,9 @@ def plot(results_sig, keys, o, x_offset=.5, y_offset=.5, n_rows=3):
 
 def experiment_1():
     """Make the plot for experiment 1."""
-    experiment_1_files = ("data/experiment_raw_nld_all_words.csv",
-                          "data/experiment_raw_eng-uk_all_words.csv",
-                          "data/experiment_raw_fra_all_words.csv")
+    experiment_1_files = ("data/experiment_nld_all_words.csv",
+                          "data/experiment_eng-uk_all_words.csv",
+                          "data/experiment_fra_all_words.csv")
     res = {}
 
     trans_dict = {"nld": "Dutch", "eng-uk": "English", "fra": "French"}
@@ -111,10 +111,10 @@ def experiment_1():
         d = pd.read_csv(x)
 
         rows = {x if x not in trans_feats else trans_feats[x]:
-                d[d["o_f"] == x] for x in systems}
+                d[d["id"] == x] for x in systems}
 
         for k, v in rows.items():
-            f = np.log10(v["freq"]+1)
+            f = np.log10(v["freq"])
             corrs[(k, "freq")] = spearmanr(v["score"], f)[0]
             corrs[(k, "length")] = spearmanr(v["score"], v["length"])[0]
             corrs[(k, "RT")] = spearmanr(v["score"], v["rt"])[0]
@@ -122,7 +122,7 @@ def experiment_1():
         for (k1, v1), (k2, v2) in combinations(rows.items(), 2):
             corrs[(k1, k2)] = spearmanr(v1["score"], v2["score"])[0]
 
-        v1f = np.log10(v1["freq"]+1)
+        v1f = np.log10(v1["freq"])
         corrs[("freq", "length")] = spearmanr(v1f,
                                               v1["length"])[0]
         corrs[("RT", "freq")] = spearmanr(v1f, v1["rt"])[0]
