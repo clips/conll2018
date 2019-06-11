@@ -1,75 +1,66 @@
-"""
-Loads the data.
-
-In all our experiments, we use a lexicon project for RT data, and a Subtitle
-database or other equivalent database for frequencies and other data.
-
-These functions are convenience functions.
-"""
-import unicodedata
-import numpy as np
-
+"""Loads the data."""
+import os
+from wordkit.corpora import LexiconProject, Subtlex, merge, Lexique
 from string import ascii_lowercase
-from wordkit.corpora import Subtlex, Lexique
-from .lexicon import read_blp_format, read_dlp1_format, read_flp_format
 
 
-# This path needs to be modified
 C_PREFIX = "../../corpora"
+FIELDS = ("orthography", "frequency")
 
-CORPORA = {"nld": (Subtlex,
-                   "{}/subtlex/SUBTLEX-NL.cd-above2.txt".format(C_PREFIX),
-                   read_dlp1_format,
-                   "{}/lexicon_projects/dlp-items.txt".format(C_PREFIX)),
-           "eng-uk": (Subtlex,
-                      "{}/subtlex/SUBTLEX-UK.xlsx".format(C_PREFIX),
-                      read_blp_format,
-                      "{}/lexicon_projects/blp-items.txt".format(C_PREFIX)),
-           "fra": (Lexique,
-                   "{}/lexique/Lexique382.txt".format(C_PREFIX),
-                   read_flp_format,
-                   "{}/lexicon_projects/French Lexicon Project words.xls"
-                   "".format(C_PREFIX))}
-
-FIELDS = ("orthography", "frequency", "log_frequency")
+LEXICON = {"eng-uk": "lexicon_projects/blp-items.txt",
+           "eng-us": "lexicon_projects/elp-items.csv",
+           "fra": "lexicon_projects/French Lexicon Project words.xls",
+           "nld": "lexicon_projects/dlp-items.txt"}
+FREQ_PATHS = {"eng-uk": "subtlex/SUBTLEX-UK.xlsx",
+              "eng-us": "subtlex/SUBTLEXusfrequencyabove1.xls",
+              "nld": "subtlex/SUBTLEX-NL.cd-above2.txt",
+              "fra": "lexique/Lexique382.txt"}
 
 
-def normalize(string):
-    """Normalize, remove accents and other stuff."""
-    s = unicodedata.normalize("NFKD", string).encode('ASCII', 'ignore')
-    return s.decode('utf-8')
-
-
-def filter_function_ortho(x):
+def filter_function(x):
     """Filter words based on punctuation and length."""
     a = not set(x['orthography']) - set(ascii_lowercase)
-    return a and len(x['orthography']) >= 2 and x['frequency'] > 1
+    c = x.get('lexicality', 'W') == 'W'
+    return a and (3 <= len(x['orthography']) <= 13) and c
 
 
-def load_data(language, max_num=np.inf):
+def load_data(language):
     """Load the words and the RT data."""
-    reader, path, lex_func, lex_path = CORPORA[language]
+    path = os.path.join(C_PREFIX, LEXICON[language])
+    if language in {"eng_uk", "nld"}:
+        fields = ("orthography", "rt", "lexicality")
+    else:
+        fields = ("orthography", "rt")
+    lex = LexiconProject(path,
+                         language=language,
+                         fields=fields)
+    lex_words = lex.transform(filter_function=filter_function)
+    lex_path = os.path.join(C_PREFIX, FREQ_PATHS[language])
 
-    rt_data = lex_func(lex_path)
-    rt_data = {normalize(k): v for k, v in rt_data}
-    r = reader(path,
-               language=language,
-               fields=FIELDS,
-               merge_duplicates=True,
-               scale_frequencies=False)
+    if language == "fra":
+        freqs = Lexique(lex_path,
+                        fields=("frequency",
+                                "orthography"),
+                        scale_frequencies=True,
+                        duplicates="sum")
+        freq_words = freqs.transform(filter_function=filter_function)
+        words = merge(lex_words,
+                      freq_words,
+                      merge_fields="orthography",
+                      transfer_fields="rt",
+                      discard=True)
+    else:
+        freqs = Subtlex(lex_path,
+                        language=language,
+                        fields=("frequency", "orthography"),
+                        scale_frequencies=True)
+        freq_words = freqs.transform(filter_function=filter_function)
+        words = merge(lex_words,
+                      freq_words,
+                      merge_fields="orthography",
+                      transfer_fields="rt",
+                      discard=False)
 
-    words = r.transform()
-    new_words = []
-    seen = set()
-    for x in words:
-        x['orthography'] = normalize(x['orthography']).lower()
-        if x['orthography'] in seen:
-            continue
-        seen.add(x['orthography'])
-        new_words.append(x)
-    words = list(filter(filter_function_ortho, new_words))
-    ortho_forms = [x['orthography'] for x in words]
-    set_ortho = set(ortho_forms)
-    rt_data = {k: v for k, v in rt_data.items() if k in set_ortho}
-
-    return words, rt_data, [x for x in words if x['orthography'] in rt_data]
+    o = words.get('orthography')
+    assert len(o) == len(set(o))
+    return words
