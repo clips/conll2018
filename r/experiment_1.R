@@ -6,20 +6,17 @@ library(lme4)
 
 df_1 <- read.table("../data/experiment_raw_nld_all_words.csv", header = T, sep = ",", comment.char="", quote="")
 df_1$language = "Dutch"
-df_1$freq = scale(log10(df_1$freq + 1))
-df_1$rt = scale(log10(df_1$rt+1))
+df_1$freq = scale(log10(df_1$freq))
 df_1$length = scale(df_1$length)
 
 df_2 <- read.table("../data/experiment_raw_eng-uk_all_words.csv", header = T, sep = ",", comment.char="", quote="")
 df_2$language = "English"
-df_2$freq = scale(log10(df_2$freq + 1))
-df_2$rt = scale(log10(df_2$rt+1))
+df_2$freq = scale(log10(df_2$freq))
 df_2$length = scale(df_2$length)
 
 df_3 <- read.table("../data/experiment_raw_fra_all_words.csv", header = T, sep = ",", comment.char="", quote="")
 df_3$language = "French"
-df_3$freq = scale(log10(df_3$freq + 1))
-df_3$rt = scale(log10(df_3$rt+1))
+df_3$freq = scale(log10(df_3$freq))
 df_3$length = scale(df_3$length)
 
 
@@ -84,8 +81,6 @@ s = summary(seriol); s$coefficients[c(2,3,4), 1]; s$adj.r.squared
 s = summary(wickel); s$coefficients[c(2,3,4), 1]; s$adj.r.squared
 s = summary(old); s$coefficients[c(2,3,4), 1]; s$adj.r.squared
 s = summary(n); s$coefficients[c(2,3,4), 1]; s$adj.r.squared
-
-df_scaled = rbind(df_scaled, df_old, df_fourteen, df_seriol, df_symbol, df_wickel, df_n)
 
 df_d = df_3
 
