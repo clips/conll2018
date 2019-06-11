@@ -20,7 +20,7 @@ if __name__ == "__main__":
         subset_words = [x for x in words if 'rt' in x]
 
         ortho_forms = [x['orthography'] for x in words]
-        freqs = [x['frequency'] for x in subset_words]
+        freqs = [x['log_frequency'] for x in subset_words]
         lengths = [len(x['orthography']) for x in subset_words]
         rt_data = [x['rt'] for x in subset_words]
         ortho_w = [x['orthography'] for x in subset_words]
