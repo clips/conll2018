@@ -1,10 +1,10 @@
 """Helpers for the experiments."""
 from itertools import product
-from wordkit.transformers import LinearTransformer, \
-                                 WickelTransformer, \
-                                 WeightedOpenBigramTransformer
-from wordkit.features import fourteen
-from wordkit.feature_extraction import OneHotCharacterExtractor
+from wordkit.orthography import LinearTransformer, \
+                                WickelTransformer, \
+                                WeightedOpenBigramTransformer, \
+                                fourteen, \
+                                OneHotCharacterExtractor
 
 
 def to_csv(filename, data, score_names):
