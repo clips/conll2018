@@ -76,4 +76,4 @@ if __name__ == "__main__":
 
         sample_results = np.array(estims)
         df = pd.DataFrame(sample_results, columns=header)
-        df.to_csv("data/experiment_{}_all_words.csv".format(lang))
+        df.to_csv("data/experiment1_{}.csv".format(lang))

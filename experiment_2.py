@@ -1,10 +1,11 @@
 """Experiment 2 in the paper."""
 import numpy as np
+import pandas as pd
 import torch
 
 from tqdm import tqdm
 from conll.mlp import Perceptron, train
-from conll.helpers import load_featurizers_ortho, to_csv
+from conll.helpers import load_featurizers_ortho
 from conll.data import load_data
 from sklearn.metrics import pairwise_distances
 
@@ -36,6 +37,8 @@ if __name__ == "__main__":
         featurizers, ids = zip(*[(x, y) for x, y in f if y in req])
         ids = list(ids)
 
+        header = ["score", "freq", "length", "rt", "ortho", "id"]
+
         estims = []
 
         for idx, f in tqdm(enumerate(featurizers), total=len(featurizers)):
@@ -49,7 +52,7 @@ if __name__ == "__main__":
 
             x_ = []
             for x in range(0, len(X), 250):
-                data = torch.from_numpy(X[x:x+250])
+                data = X[x:x+250]
                 _, pred = p(data)
                 x_.extend(torch.max(pred, 1)[1])
 
@@ -71,9 +74,13 @@ if __name__ == "__main__":
             s = np.partition(dist, axis=1, kth=21)[:, :21]
             s = np.sort(s, 1)[:, 1:21].mean(1)
 
-            estims.append(list(zip(s, freqs, lengths, rt_data, ortho_w)))
+            estims.extend(zip(s,
+                              freqs,
+                              lengths,
+                              rt_data,
+                              ortho_w,
+                              ["+".join(ids[idx])] * X.shape[0]))
 
         sample_results = np.array(estims)
-        to_csv("data/experiment_mlp_{}_all_words.csv".format(lang),
-               dict(zip(ids, sample_results)),
-               ("score", "freq", "length", "rt", "ortho_form"))
+        df = pd.DataFrame(sample_results, columns=header)
+        df.to_csv("data/experiment2_{}.csv".format(lang))
