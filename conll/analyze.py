@@ -35,7 +35,14 @@ if __name__ == "__main__":
 
     results = {}
 
-    for x in iglob("data/experiment_*_all_words.csv"):
+    for x in iglob("data/experiment1_*.csv"):
 
         df = pd.read_csv(x)
         results[x] = process_df(df)
+
+    results_mlp = {}
+
+    for x in iglob("data/experiment2_*.csv"):
+
+        df = pd.read_csv(x)
+        results_mlp[x] = process_df(df)
