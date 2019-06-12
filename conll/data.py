@@ -1,5 +1,4 @@
 """Loads the data."""
-import numpy as np
 from wordkit.corpora import LexiconProject, Subtlex, merge, Lexique
 from string import ascii_lowercase
 
