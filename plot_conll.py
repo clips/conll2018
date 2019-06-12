@@ -2,6 +2,8 @@
 import pandas as pd
 import numpy as np
 
+from matplotlib.colors import LinearSegmentedColormap
+
 from itertools import combinations
 from matplotlib import pyplot as plt
 
@@ -12,8 +14,26 @@ plt.rc('font', family='sans-serif')
 plt.rc('font', serif='Helvetica')
 plt.rc('text', usetex='false')
 
+hexcols = ['#fff7f3',
+           '#fde0dd',
+           '#fcc5c0',
+           '#fa9fb5',
+           '#f768a1',
+           '#dd3497',
+           '#ae017e',
+           '#7a0177',
+           '#49006a']
 
-def plot(results_sig, keys, o, x_offset=.5, y_offset=.5, n_rows=3):
+rgbcols = []
+for x in hexcols:
+    x = x[1:]
+    rgbcol = tuple(int(x[i:i+2], 16) / 255 for i in (0, 2, 4))
+    rgbcols.append(rgbcol)
+
+cmap = LinearSegmentedColormap.from_list("", rgbcols)
+
+
+def plot(results_sig, keys, o, x_offset=.5, y_offset=.5, n_rows=1):
     """Plot results."""
     o_labs = ["{}. {}".format(idx+1, k) for idx, k in enumerate(o)]
     o_dict = {k: idx for idx, k in enumerate(o)}
@@ -24,12 +44,12 @@ def plot(results_sig, keys, o, x_offset=.5, y_offset=.5, n_rows=3):
                           n_cols,
                           sharey=False,
                           sharex=False,
-                          figsize=(5, 12))
+                          figsize=(12, 5))
 
     if n_rows == 1:
-        f.subplots_adjust(hspace=.1, wspace=.0)
+        f.subplots_adjust(hspace=-.51, wspace=.0)
     else:
-        f.subplots_adjust(hspace=.1, wspace=-0.51)
+        f.subplots_adjust(hspace=-.51, wspace=.1)
 
     if np.ndim(sub) == 1:
         if n_rows != 1:
@@ -43,7 +63,7 @@ def plot(results_sig, keys, o, x_offset=.5, y_offset=.5, n_rows=3):
         curr = sub[idx // n_cols, idx % n_cols]
         if idx % n_cols == 0:
             curr.set_yticks(np.arange(len(o)))
-            curr.set_yticklabels(o_labs[::-1])
+            curr.set_yticklabels(o_labs)
             curr.set_ylim(-.5, len(o)-.5)
             curr.set_title(keys[idx])
         else:
@@ -65,12 +85,8 @@ def plot(results_sig, keys, o, x_offset=.5, y_offset=.5, n_rows=3):
         plotto = np.zeros((len(o), len(o)))
         for (a, b), v in res_sig.items():
             x, y = o_dict[a], o_dict[b]
-            if y < x:
-                x, y = y, x
-
-            x = (len(o) - x) - 1
-
             plotto[x, y] = res_sig[(a, b)]
+            plotto[y, x] = res_sig[(a, b)]
             txt = ("%.2f" % res_sig[(a, b)]).replace("-0", "-").lstrip("0")
             curr.text(y+y_offset,
                       x+x_offset,
@@ -78,57 +94,54 @@ def plot(results_sig, keys, o, x_offset=.5, y_offset=.5, n_rows=3):
                       fontsize=8,
                       color='black',
                       ha="center")
-        curr.imshow(plotto, cmap="PRGn", vmin=-1, vmax=1)
+            curr.text(x+x_offset,
+                      y+y_offset,
+                      txt,
+                      fontsize=8,
+                      color='black',
+                      ha="center")
+        curr.imshow(plotto.T, cmap=cmap, vmin=-1, vmax=1)
 
 
 def experiment_1():
     """Make the plot for experiment 1."""
-    experiment_1_files = ("data/experiment_nld_all_words.csv",
-                          "data/experiment_eng-uk_all_words.csv",
-                          "data/experiment_fra_all_words.csv")
+    experiment_1_files = ("data/experiment1_nld.csv",
+                          "data/experiment1_eng-uk.csv",
+                          "data/experiment1_fra.csv")
     res = {}
 
     trans_dict = {"nld": "Dutch", "eng-uk": "English", "fra": "French"}
 
-    trans_feats = {"coltheart_n": "N",
-                   "old_20": "old 20",
+    trans_feats = {"n": "N",
+                   "old20": "old 20",
                    "weighted bigrams": "rd 20 - bigrams",
                    "wickelfeatures": "rd 20 - wickel",
                    "fourteen": "rd 20 - fourteen",
                    "one hot": "rd 20 - one hot"}
 
-    systems = ["weighted bigrams",
-               "fourteen",
-               "one hot",
-               "wickelfeatures",
-               "old_20",
-               "coltheart_n"]
-
     res = {}
 
-    for x in experiment_1_files:
+    for x in sorted(experiment_1_files):
         corrs = {}
         d = pd.read_csv(x)
 
-        rows = {x if x not in trans_feats else trans_feats[x]:
-                d[d["id"] == x] for x in systems}
+        ids = np.unique(d['id'])
+        rows = {trans_feats[x.split("+")[-1]]: d[d["id"] == x] for x in ids}
 
         for k, v in rows.items():
-            f = np.log10(v["freq"])
-            corrs[(k, "freq")] = spearmanr(v["score"], f)[0]
+            corrs[(k, "freq")] = spearmanr(v["score"], v["freq"])[0]
             corrs[(k, "length")] = spearmanr(v["score"], v["length"])[0]
             corrs[(k, "RT")] = spearmanr(v["score"], v["rt"])[0]
 
         for (k1, v1), (k2, v2) in combinations(rows.items(), 2):
             corrs[(k1, k2)] = spearmanr(v1["score"], v2["score"])[0]
 
-        v1f = np.log10(v1["freq"])
-        corrs[("freq", "length")] = spearmanr(v1f,
+        corrs[("freq", "length")] = spearmanr(v1["freq"],
                                               v1["length"])[0]
-        corrs[("RT", "freq")] = spearmanr(v1f, v1["rt"])[0]
+        corrs[("RT", "freq")] = spearmanr(v1["freq"], v1["rt"])[0]
         corrs[("RT", "length")] = spearmanr(v1["rt"], v1["length"])[0]
 
-        res[trans_dict[x.split("_")[-3]]] = corrs
+        res[trans_dict[x.split(".")[0].split("_")[1]]] = corrs
 
     o = ["rd 20 - fourteen",
          "rd 20 - one hot",
@@ -140,16 +153,16 @@ def experiment_1():
          "length",
          "RT"]
 
-    plot(res, list(res.keys()), x_offset=0, y_offset=-.1, o=o)
+    plot(res, sorted(res.keys()), x_offset=0, y_offset=-.1, o=o)
     plt.savefig("plots/conll_figure_exp_1.pdf", bbox_inches="tight")
     plt.close()
 
 
 def experiment_2():
     """Make the plot for experiment 2."""
-    experiment_2_files = ("data/experiment_mlp_nld_all_words.csv",
-                          "data/experiment_mlp_eng-uk_all_words.csv",
-                          "data/experiment_mlp_fra_all_words.csv")
+    experiment_2_files = ("data/experiment2_nld.csv",
+                          "data/experiment2_eng-uk.csv",
+                          "data/experiment2_fra.csv")
     res = {}
 
     trans_dict = {"nld": "Dutch", "eng-uk": "English", "fra": "French"}
@@ -161,36 +174,29 @@ def experiment_2():
                    "fourteen": "rd 20 - fourteen",
                    "one hot": "rd 20 - one hot"}
 
-    systems = ["weighted bigrams",
-               "fourteen",
-               "one hot",
-               "wickelfeatures"]
-
     res = {}
 
     for x in experiment_2_files:
         corrs = {}
         d = pd.read_csv(x)
 
-        rows = {x if x not in trans_feats else trans_feats[x]:
-                d[d["o_f"] == x] for x in systems}
+        ids = np.unique(d['id'])
+        rows = {trans_feats[x.split("+")[-1]]: d[d["id"] == x] for x in ids}
 
         for k, v in rows.items():
-            f = np.log10(v["freq"]+1)
-            corrs[(k, "freq")] = spearmanr(v["score"], f)[0]
+            corrs[(k, "freq")] = spearmanr(v["score"], v["freq"])[0]
             corrs[(k, "length")] = spearmanr(v["score"], v["length"])[0]
             corrs[(k, "RT")] = spearmanr(v["score"], v["rt"])[0]
 
         for (k1, v1), (k2, v2) in combinations(rows.items(), 2):
             corrs[(k1, k2)] = spearmanr(v1["score"], v2["score"])[0]
 
-        v1f = np.log10(v1["freq"]+1)
-        corrs[("freq", "length")] = spearmanr(v1f,
+        corrs[("freq", "length")] = spearmanr(v1["freq"],
                                               v1["length"])[0]
-        corrs[("RT", "freq")] = spearmanr(v1f, v1["rt"])[0]
+        corrs[("RT", "freq")] = spearmanr(v1["freq"], v1["rt"])[0]
         corrs[("RT", "length")] = spearmanr(v1["rt"], v1["length"])[0]
 
-        res[trans_dict[x.split("_")[-3]]] = corrs
+        res[trans_dict[x.split(".")[0].split("_")[1]]] = corrs
 
     o = ["rd 20 - fourteen",
          "rd 20 - one hot",
