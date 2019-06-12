@@ -1,9 +1,7 @@
 """Loads the data."""
 import numpy as np
-
 from wordkit.corpora import LexiconProject, Subtlex, merge, Lexique
 from string import ascii_lowercase
-from copy import deepcopy
 
 
 C_PREFIX = "../../corpora"
@@ -27,22 +25,12 @@ FIELDS = ("orthography", "frequency", "log_frequency")
 def filter_function_ortho(x):
     """Filter words based on punctuation and length."""
     a = not set(x['orthography']) - set(ascii_lowercase)
+    b = x['orthography'] == x['orthography'].lower()
     c = x.get('lexicality', 'W') == 'W'
-    return a and len(x['orthography']) >= 2 and c
+    return a and b and 2 <= len(x['orthography']) and c
 
 
-def shuffle_letters(word, max_length):
-    """Get a word, shuffle the letters."""
-    orth_form = word['orthography']
-    freq = word['frequency'] / ((max_length - len(orth_form)) + 1)
-    for x in range((max_length-len(orth_form)) + 1):
-        w = deepcopy(word)
-        w['orthography'] = " " * x + w['orthography']
-        w['frequency'] = freq
-        yield w
-
-
-def load_data(language, max_num=np.inf, shuffled=False):
+def load_data(language):
     """Load the words and the RT data."""
     path = LEXICONS[language]
 
@@ -54,6 +42,8 @@ def load_data(language, max_num=np.inf, shuffled=False):
                          language=language,
                          fields=fields)
     lex_words = lex.transform(filter_function=filter_function_ortho)
+    lex_words = lex_words.filter(filter_nan=("rt",))
+
     freqpath = SUBTITLES[language]
 
     if language == "fra":
@@ -70,7 +60,6 @@ def load_data(language, max_num=np.inf, shuffled=False):
                   lex_words,
                   merge_fields=("orthography",),
                   transfer_fields=("frequency",))
-
-    words = words.filter(filter_nan=("rt", "frequency"))
+    words = words.filter(filter_nan=("frequency",))
 
     return words
