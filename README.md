@@ -1,3 +1,10 @@
+# WARNING: This repository is no longer maintained.
+
+This project is archived and will not receive further updates, bug fixes, or security patches. Issues and pull requests may not be reviewed.
+
+Use this software at your own risk.
+__________________________________________________
+
 # conll2018
 
 The code for the conll2018 submission: [from strings to other things: linking the neighborhood and transposition effects in word reading.](http://www.aclweb.org/anthology/K18-1008)
